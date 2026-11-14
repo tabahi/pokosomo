@@ -1,0 +1,13 @@
+% Extra LaTeX loaded for every note turned into a PDF.
+% Notes can add more with `header-includes:` in their front matter.
+\usepackage{float}
+\floatplacement{figure}{H}          % keep figures where they appear in the note
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\usepackage{siunitx}                % \SI{37}{\celsius}, \num{1e6}
+\usepackage[version=4]{mhchem}      % \ce{NaCl}, \ce{H2O}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\pagestyle{plain}
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}

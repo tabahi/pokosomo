@@ -1,0 +1,13 @@
+.git
+.venv
+.env
+.env.*
+!.env.example
+node_modules
+__pycache__
+*.py[cod]
+secrets.json
+data
+workspace
+tmp
+*.log

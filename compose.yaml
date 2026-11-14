@@ -1,0 +1,25 @@
+services:
+  studio:
+    image: where22/pokosomo-zero:latest
+    build: .
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${PORT:-8001}:8001"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8001
+      POKOSOMO_VENV: /opt/venv
+      POKOSOMO_SECRETS: /app/data/secrets.json
+      CODEX_HOME: /root/.codex
+      CLAUDE_CONFIG_DIR: /root/.claude
+    volumes:
+      - ./workspace:/app/workspace
+      - ./tmp:/app/tmp
+      - ./data:/app/data
+      - codex-home:/root/.codex
+      - claude-home:/root/.claude
+
+volumes:
+  codex-home:
+  claude-home:

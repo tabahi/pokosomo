@@ -1,3 +1,10 @@
+workspace/
+tmp/
+secrets.json
+data/
+__pycache__/
+.venv/
+
 # Logs
 logs
 *.log

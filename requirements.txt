@@ -1,0 +1,10 @@
+# Studio server (installed into /opt/venv by scripts/install_deps.sh, which also adds the research stack)
+fastapi
+uvicorn[standard]
+python-multipart
+pyotp
+qrcode[pil]
+pandas
+openpyxl
+xlrd
+odfpy
