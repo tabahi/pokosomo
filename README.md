@@ -44,13 +44,12 @@ but no time or wish to learn programming.
   (Antigravity). You don't need API keys or a separate bill, and you can switch between them in
   Settings.
 - **Your files stay yours.** Each project is an ordinary folder on your computer that you can back
-  up or open in other programs. It runs on a laptop, a lab server or a VPS, and on a phone the three
-  panels become tabs.
+  up or open in other programs. It runs on a laptop, a lab server or a VPS, or a raspberry pi.
 
 ## What you need
 
-- **Windows 10/11** or **Linux**, with about **20 GB of free disk space**. The first start
-  downloads about 10 GB.
+- **Windows 10/11** or **Linux**, with about **10 GB of free disk space**. The first start
+  downloads about 3 GB.
 - **An account with at least one AI provider:** a Claude subscription, a ChatGPT plan that includes
   Codex, or a Google account for Antigravity.
 - **A container program**, which keeps all the tools in one tidy box:
