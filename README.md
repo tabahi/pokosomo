@@ -62,8 +62,11 @@ but no time or wish to learn programming.
 ## Get it working on Windows
 
 1. **Install [Docker Desktop](https://www.docker.com/get-started/)** and open it. Wait until it says the engine is running.
-2. **Download Pokosomo**: on the GitHub page, click **Code → Download ZIP**, then extract the ZIP
-   wherever you want to keep your projects (for example, `Documents\Pokosomo`).
+2. **Download Pokosomo**: on the GitHub page, click **Code → Download ZIP**.
+   **Before extracting**, right-click the ZIP → **Properties** → tick **Unblock** (at the bottom of
+   the General tab) → **OK**. Otherwise Windows may block the start scripts (see
+   [Troubleshooting](#troubleshooting)). Then extract the ZIP wherever you want to keep your projects
+   (for example, `Documents\Pokosomo`).
 3. Open the `windows` folder and **double-click `start.bat`**. The first time, it:
    - asks you to accept the license terms (it's free software with no warranty, see [License](#license))
    - downloads the ready-made studio (this takes a while the first time)
@@ -158,6 +161,7 @@ once.
 | Forgot the studio password, or want to turn on two-factor sign-in | Stop the studio, delete `data\secrets.json` (`data/secrets.json` on Linux), and start again. It asks for a new password. Your projects are untouched. |
 | The assistant says it isn't signed in | Run the setup shortcut again and connect that account. |
 | A Claude, Codex or Antigravity model has run out of usage | Pick another model or assistant in **Settings**, then press **Try again**. |
+| Windows blocks `start.bat` ("Smart App Control blocked…" or "Windows protected your PC") | Windows marks files downloaded from the internet, and blocks scripts that carry the mark. To remove it from the files you already extracted, open the Pokosomo folder, click the address bar, type `powershell` and press Enter. In the blue window, paste `Get-ChildItem -Recurse \| Unblock-File`, press Enter, and close it. Then double-click `start.bat` again. (Or delete the folder, unblock the ZIP as in step 2, and extract it again.) Don't turn Smart App Control off: on many PCs it can't be turned back on without reinstalling Windows. |
 | A double-clicked `.bat` window closes straight away | Open the file in Notepad and check the bottom-right corner, which should say **Windows (CRLF)**. If it says **Unix (LF)**, download the ZIP again rather than copying the files over by hand. |
 
 ## For technical users

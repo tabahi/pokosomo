@@ -1,6 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0..\.."
+echo Using WSL containers.
 
 wslc version >nul 2>&1
 if errorlevel 1 (
@@ -15,6 +16,7 @@ if not exist data mkdir data
 if not exist workspace mkdir workspace
 if not exist tmp mkdir tmp
 
+echo Checking whether Pokosomo is already running...
 rem Already running (e.g. in another window)? Just open it instead of failing on the name conflict.
 wslc ps 2>nul | findstr /C:"pokosomo-studio" >nul
 if not errorlevel 1 (

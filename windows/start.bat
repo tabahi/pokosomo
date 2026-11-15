@@ -29,16 +29,18 @@ exit /b 1
 :accepted
 if not exist "%~dp0..\data" mkdir "%~dp0..\data"
 > "%~dp0..\data\.terms-accepted" echo accepted %DATE% %TIME%
+echo Thank you. Terms accepted.
 echo.
 
 :engine
-
+echo Looking for a container engine. The first check can take a minute while WSL starts...
 wslc version >nul 2>&1
 if not errorlevel 1 (
   call "%~dp0wslc\start.bat"
   exit /b
 )
 
+echo WSL containers not found. Looking for Docker...
 where docker >nul 2>&1
 if not errorlevel 1 (
   call "%~dp0docker\start.bat"

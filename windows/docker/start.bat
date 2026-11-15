@@ -1,6 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0..\.."
+echo Using Docker.
 
 where docker >nul 2>&1
 if errorlevel 1 (
@@ -8,6 +9,7 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
+echo Checking that Docker Desktop is running...
 docker info >nul 2>&1
 if errorlevel 1 (
   echo Docker Desktop is not running yet. Start it, wait until it says "Engine running", then try again.
