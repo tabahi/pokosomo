@@ -1,10 +1,10 @@
-"""Login protection: static password + TOTP (authenticator app), server-side sessions.
+"""Login protection: password, optional TOTP (authenticator app), server-side sessions.
 
 secrets.json layout (other top-level keys are preserved untouched):
     {
       "login": {
         "password_hash": "scrypt$16384$8$1$<salt b64>$<hash b64>",
-        "totp_secret": "BASE32SECRET"
+        "totp_secret": "BASE32SECRET"      # only present when two-factor sign-in is enabled
       }
     }
 
@@ -71,9 +71,14 @@ def load_secrets(path: Path = SECRETS_FILE) -> dict:
 
 def login_config() -> Optional[dict]:
     login = load_secrets().get("login") or {}
-    if login.get("password_hash") and login.get("totp_secret"):
+    if login.get("password_hash"):
         return login
     return None
+
+
+def totp_enabled(cfg: Optional[dict] = None) -> bool:
+    cfg = login_config() if cfg is None else cfg
+    return bool(cfg and cfg.get("totp_secret"))
 
 
 # --------------------------------------------------------------------------- TOTP
@@ -297,13 +302,17 @@ async def attempt_login(scope, password: str, code: str, remember: bool) -> tupl
     wait = limiter.blocked_for(ip)
     if wait:
         return False, f"Too many attempts. Please wait {max(1, wait // 60)} minute(s) and try again.", None
-    # Both checks always run, so timing doesn't reveal which one was wrong.
     pw_ok = await asyncio.to_thread(verify_password, password or "", cfg["password_hash"])
-    code_ok = pw_ok and totp_verifier.verify(cfg["totp_secret"], code or "")
+    if totp_enabled(cfg):
+        code_ok = pw_ok and totp_verifier.verify(cfg["totp_secret"], code or "")
+        wrong = "Password or code is not correct. Codes change every 30 seconds — use a fresh one."
+    else:
+        code_ok = True
+        wrong = "That password is not correct."
     if not (pw_ok and code_ok):
         limiter.fail(ip)
         await asyncio.sleep(0.6)
-        return False, "Password or code is not correct. Codes change every 30 seconds — use a fresh one.", None
+        return False, wrong, None
     limiter.reset(ip)
     token = sessions.create(remember=remember, user_agent=_headers(scope).get("user-agent", ""))
     return True, "ok", token
@@ -392,9 +401,16 @@ def _setup_cli():
     keep_totp = False
     if login.get("totp_secret"):
         keep_totp = input("Keep the existing authenticator (2FA) setup? [Y/n] ").strip().lower() in ("", "y", "yes")
-    secret = login["totp_secret"] if keep_totp else pyotp.random_base32()
-
+    use_totp = keep_totp
     if not keep_totp:
+        print("\nTwo-factor sign-in (2FA) asks for a 6-digit code from an authenticator app on your phone,")
+        print("in addition to the password.")
+        print("  - Running only on your own computer (http://localhost)? You can skip it.")
+        print("  - Reachable from the internet or a shared network (a public server)? You MUST enable it.")
+        use_totp = input("Enable two-factor sign-in? [y/N] ").strip().lower() in ("y", "yes")
+    secret = login["totp_secret"] if keep_totp else (pyotp.random_base32() if use_totp else None)
+
+    if use_totp and not keep_totp:
         name = input("Name shown in the authenticator app [studio]: ").strip() or "studio"
         uri = pyotp.TOTP(secret).provisioning_uri(name=name, issuer_name="Pokosomo Studio")
         print("\nScan this QR code with Google Authenticator / Microsoft Authenticator / Aegis / 1Password:\n")
@@ -412,7 +428,12 @@ def _setup_cli():
             print("Aborted — nothing was saved.")
             sys.exit(1)
 
-    data["login"] = {"password_hash": hash_password(pw), "totp_secret": secret}
+    data["login"] = {"password_hash": hash_password(pw)}
+    if secret:
+        data["login"]["totp_secret"] = secret
+    else:
+        print("\nTwo-factor sign-in is OFF. Do not expose this studio to the internet without it;")
+        print("run ./setup_auth.sh again to turn it on.")
     SECRETS_FILE.write_text(json.dumps(data, indent=2) + "\n")
     os.chmod(SECRETS_FILE, 0o600)
     sessions.revoke_all()

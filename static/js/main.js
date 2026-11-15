@@ -189,7 +189,7 @@ async function openSettings() {
         <label class="radio"><input type="radio" name="engine" value="agy"> <span><b>Antigravity</b> (Gemini and others)</span></label>
         <div class="sub" data-for="agy"><select class="input" id="agyModel"></select></div>
         <label class="radio"><input type="radio" name="engine" value="codex"> <span><b>OpenAI Codex</b></span></label>
-        <div class="sub" data-for="codex"><input class="input" id="codexModel" placeholder="Model (optional; uses Codex default)"></div>
+        <div class="sub" data-for="codex"><select class="input" id="codexModel"></select></div>
       </section>
       <section>
         <h4>Accounts</h4>
@@ -212,7 +212,7 @@ async function openSettings() {
     $('#btnTerminal')?.classList.toggle('hidden', !adv.checked);
   };
   $('#btnLogoutAll', d).onclick = async () => {
-    if (!await confirmDialog({ title: 'Sign out everywhere?', message: 'All browsers, including this one, will need the password and code again.', okText: 'Sign out everywhere', danger: true })) return;
+    if (!await confirmDialog({ title: 'Sign out everywhere?', message: 'All browsers, including this one, will need to sign in again.', okText: 'Sign out everywhere', danger: true })) return;
     await api('/api/auth/logout-all', { method: 'POST' }).catch(() => {});
     location.href = '/login';
   };
@@ -223,14 +223,13 @@ async function openSettings() {
     const codexModel = $('#codexModel', d);
     cm.innerHTML = claude_models.map(m => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('');
     cm.value = settings.claude_model;
-    codexModel.value = settings.codex_model || '';
     d.querySelectorAll('input[name=engine]').forEach(r => { r.checked = r.value === settings.engine; });
     const save = async () => {
       const body = {
         engine: d.querySelector('input[name=engine]:checked')?.value || 'claude',
         claude_model: cm.value,
         agy_model: $('#agyModel', d).value || settings.agy_model,
-        codex_model: codexModel.value.trim(),
+        codex_model: codexModel.options.length ? codexModel.value : (settings.codex_model || ''),
       };
       try { await api('/api/settings', { method: 'PUT', body }); toast('Saved — new chats will use this', 'ok', 2000); }
       catch (e) { toast(e.message, 'error'); }
@@ -241,9 +240,15 @@ async function openSettings() {
 
     const agents = await api('/api/agents');
     const am = $('#agyModel', d);
-    am.innerHTML = (agents.agy?.models || []).map(m => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('');
+    const agyModels = [...(agents.agy?.models || [])];
+    if (settings.agy_model && !agyModels.some(m => m.id === settings.agy_model)) agyModels.unshift({ id: settings.agy_model, name: settings.agy_model });
+    am.innerHTML = agyModels.map(m => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('');
     am.value = settings.agy_model;
     am.onchange = save;
+    const codexModels = [...(agents.codex?.models || [{ id: '', name: 'Default (from Codex settings)' }])];
+    if (settings.codex_model && !codexModels.some(m => m.id === settings.codex_model)) codexModels.push({ id: settings.codex_model, name: settings.codex_model });
+    codexModel.innerHTML = codexModels.map(m => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('');
+    codexModel.value = settings.codex_model || '';
     const c = agents.claude || {};
     const cAuth = c.auth || {};
     const codex = agents.codex || {};
@@ -254,7 +259,7 @@ async function openSettings() {
         <div><b>Antigravity</b> — ${agents.agy?.installed ? (agents.agy.authenticated ? 'signed in' : 'not signed in') : 'not installed'}</div></div>
       <div class="account-row">${icon(codex.authenticated ? 'CircleCheck' : 'CircleAlert', codex.authenticated ? 'ok' : 'warn')}
         <div><b>OpenAI Codex</b> — ${codex.installed ? (codex.authenticated ? 'signed in' : 'not signed in') : 'not installed'}</div></div>
-      <p class="hint">To sign in, use the included setup shortcut on Windows, or run <code>claude auth login</code>, <code>codex login</code>, or <code>agy</code> in the server terminal.</p>`;
+      <p class="hint">To sign in, run the setup shortcut that came with Pokosomo: <code>windows\\setup-agent.bat</code> on Windows or <code>./linux/setup-agent.sh</code> on Linux. Or open Terminal here and run <code>claude auth login</code>, <code>codex login</code> or <code>agy</code> (choose “Sign in”, then type <code>/exit</code> when done).</p>`;
   } catch (e) {
     $('#accounts', d).textContent = e.message;
   }

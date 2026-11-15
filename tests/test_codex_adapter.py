@@ -18,11 +18,20 @@ class CodexAdapterTests(unittest.TestCase):
                 chat = ChatManager().create(project)
 
             self.assertEqual((chat["engine"], chat["model"]), ("codex", "test-model"))
-            command = ChatManager()._command(chat, project, "Do the work")
+            with patch("server.chat_manager.IN_CONTAINER", False):
+                command = ChatManager()._command(chat, project, "Do the work")
             self.assertEqual(command[:2], ["codex", "exec"])
             self.assertEqual(command[-1], "Do the work")
-            self.assertIn("workspace-write", command)
-            self.assertIn("--add-dir", command)
+            self.assertIn('sandbox_mode="workspace-write"', command)
+            self.assertIn('approval_policy="never"', command)
+            # Flags that `codex exec resume` rejects must not be used.
+            for flag in ("--ask-for-approval", "--sandbox", "--cd", "--add-dir"):
+                self.assertNotIn(flag, command)
+
+            with patch("server.chat_manager.IN_CONTAINER", True):
+                in_container = ChatManager()._command(chat, project, "Do the work")
+            self.assertIn("--dangerously-bypass-approvals-and-sandbox", in_container)
+            self.assertNotIn('sandbox_mode="workspace-write"', in_container)
 
             chat["agent_session"] = "thread-123"
             resumed = ChatManager()._command(chat, project, "Continue")

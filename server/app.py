@@ -47,7 +47,7 @@ def _files(name: str) -> ProjectFiles:
 # =========================================================================== auth
 class LoginRequest(BaseModel):
     password: str
-    code: str
+    code: str = ""
     remember: bool = False
 
 
@@ -60,7 +60,9 @@ async def login_page(request: Request):
 
 @app.get("/api/auth/state")
 async def auth_state(request: Request):
-    return {"configured": auth.login_config() is not None,
+    cfg = auth.login_config()
+    return {"configured": cfg is not None,
+            "totp": auth.totp_enabled(cfg),
             "signed_in": auth.sessions.validate(auth.token_from_scope(request.scope))}
 
 
@@ -467,7 +469,31 @@ async def terminal_ws(websocket: WebSocket, session_id: str):
 
 
 # =========================================================================== static
-app.mount("/static", StaticFiles(directory=STATIC), name="static")
+class RevalidatingStaticFiles(StaticFiles):
+    """Make browsers check for a newer copy on every load (a cheap 304 when unchanged), so an
+    updated studio never runs with stale JavaScript or CSS from the browser cache."""
+    async def get_response(self, path, scope):
+        resp = await super().get_response(path, scope)
+        resp.headers["cache-control"] = "no-cache"
+        return resp
+
+
+def _static_version() -> str:
+    """Fingerprint of the app's own JS/CSS. The page loads them from /static/v/<fingerprint>/..., so
+    any change gives new URLs that no browser cache can hold (relative module imports follow along)."""
+    import hashlib
+    h = hashlib.sha1()
+    for f in sorted(list((STATIC / "js").rglob("*")) + list((STATIC / "css").rglob("*"))):
+        if f.is_file():
+            st = f.stat()
+            h.update(f"{f.relative_to(STATIC)}:{st.st_size}:{st.st_mtime_ns}".encode())
+    return h.hexdigest()[:10]
+
+
+STATIC_VERSION = _static_version()
+# Must come before the plain /static mount, which would otherwise match these URLs first.
+app.mount(f"/static/v/{STATIC_VERSION}", RevalidatingStaticFiles(directory=STATIC), name="static-versioned")
+app.mount("/static", RevalidatingStaticFiles(directory=STATIC), name="static")
 
 
 @app.get("/favicon.svg")
@@ -477,4 +503,7 @@ async def favicon():
 
 @app.get("/")
 async def index():
-    return FileResponse(STATIC / "index.html", headers={"cache-control": "no-cache"})
+    html = (STATIC / "index.html").read_text()
+    for d in ("js", "css"):
+        html = html.replace(f'"/static/{d}/', f'"/static/v/{STATIC_VERSION}/{d}/')
+    return Response(html, media_type="text/html", headers={"cache-control": "no-cache"})

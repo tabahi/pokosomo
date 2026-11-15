@@ -18,6 +18,7 @@ export function initTerminals(container) {
       <button class="btn btn-sm btn-ghost" data-cmd="/bin/bash" data-title="Shell">${icon('SquareTerminal')}Shell</button>
       <button class="btn btn-sm btn-ghost" data-cmd="claude" data-title="Claude Code">${icon('Bot')}Claude Code</button>
       <button class="btn btn-sm btn-ghost" data-cmd="agy" data-title="Antigravity">${icon('Rocket')}Antigravity</button>
+      <button class="btn btn-sm btn-ghost" data-cmd="codex" data-title="Codex">${icon('Code')}Codex</button>
       <button class="icon-btn" id="termHide" title="Hide terminal">${icon('ChevronDown')}</button>
     </div>
     <div class="term-views" id="termViews"><div class="term-empty hint">Start a shell or an agent. It runs inside this project's folder.</div></div>`;

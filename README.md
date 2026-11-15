@@ -1,137 +1,241 @@
-# Pokosomo Studio
+# <img src="static/favicon.svg" alt="Pokosomo Studio" width="32" height="32" style="display:inline-block; vertical-align:middle;" /> Pokosomo Studio
 
-A private research workspace in the browser, built for a non-programmers and non-technical researchers, to let the AI agents do the grind work.
-User organises work into **projects**, reads and edits documents, and asks an **AI assistant**
-(Claude Code, OpenAI Codex, or Antigravity, running headlessly) to do the grind work: summarise papers, run
-statistics, make figures, draft, analyze data, and proofread text. 
+**A ready-made AI lab assistant for scientists who don't code.**
 
-It is designed to use Claude Code, Antigravity, or Codex with an account subscription, instead of a token-based API, although API accounts can also be used. Sign in once using `claude auth login`, `codex login`, or `agy`.
+Programmers already have powerful AI agents that read files, run analyses and write code, but those
+tools assume you live in a terminal and can set up Python, R and LaTeX yourself. Pokosomo puts the
+same kind of agent in a sealed box with everything a researcher needs already installed. You add
+it with a double-click and use it in your browser.
 
-## What the user sees
+It was built for friends in **medical research**: people who are experts in their field, have
+spreadsheets of plate counts, growth curves and qPCR results, and a folder of papers to get through,
+but no time or wish to learn programming.
 
-| Area | What it does |
+![A project in Pokosomo Studio](./static/screen_project.png)
+
+## What makes it different
+
+**A chatbot gives you text to copy and paste. Pokosomo hands you finished files.**
+
+| In a chatbot website | In Pokosomo |
 |---|---|
-| **Projects** home | One card per folder in `workspace/`. Create, rename, delete (deletes go to `workspace/.trash/`). |
-| **Files** (left) | Project files. Upload by button or drag-and-drop, new notes/folders, rename, move (drag onto a folder), download. |
-| **Document** (middle) | Opens whatever is selected: **notes** (Markdown) in a writing editor with toolbar, Title/Author/Date fields and **Make PDF** (pandoc + XeLaTeX) or Word export; PDFs; Word/PowerPoint previews (LibreOffice) with “Edit as note”; CSV/Excel tables; images; plain text/code. Autosaves. |
-| **Assistant** (right) | Chat with the agent. Shows its steps in plain language (“Read data.csv”, “Edited notes.md”) with links to open the files it touched. Chats are saved per project. Stop button, attachments, “Try again”. |
+| You upload a file, it describes it | It opens your actual files and works on them where they are |
+| It suggests Python code you'd have to run yourself | It runs the analysis itself and gives you the results, the figure and the script |
+| You copy its answer into Word | It writes the note, PDF or Word file into your project |
+| Each conversation starts from nothing | Each project keeps its files and its chat history together |
+| You set up the tools, or do without | R, Python, LaTeX, OCR and Office conversion are already inside |
 
-On phones the three areas become bottom tabs. A terminal (xterm.js) is available behind
-**Settings → Advanced** for technical users.
+- **Made for a scientist, not a developer.** The assistant is told that you're an expert in your
+  field but not a programmer. It replies in plain language, shows its results as files you can open,
+  and doesn't send you off to run commands.
+- **Careful with your science.** It saves every analysis as a script so it can be re-run and checked.
+  It checks the assumptions before choosing a statistical test, and it's told never to invent data
+  or references.
+- **Ready for lab data.** It comes with Python (pandas, SciPy, statsmodels, pingouin, scikit-posthocs,
+  lifelines, Biopython, scikit-bio) and R, so growth curves, group comparisons, survival curves,
+  sequence files and diversity measures work straight away. It can install anything else it needs.
+- **Ready for writing.** Notes become typeset PDFs (LaTeX, with references) or Word files with one
+  click. Scanned papers are made searchable with OCR, and Word and PowerPoint files can be previewed
+  and turned into notes.
+- **Contained.** The assistant works inside its own container. It can reach only the Pokosomo folder,
+  not the rest of your computer, and it's told to stay inside the project you have open. Deleted
+  files go to a trash folder instead of disappearing.
+- **Uses the subscription you already have.** Connect Claude, ChatGPT (Codex) or Google
+  (Antigravity). You don't need API keys or a separate bill, and you can switch between them in
+  Settings.
+- **Your files stay yours.** Each project is an ordinary folder on your computer that you can back
+  up or open in other programs. It runs on a laptop, a lab server or a VPS, and on a phone the three
+  panels become tabs.
 
-## Setup (Windows recommended)
+## What you need
 
-Pokosomo runs in a Linux container so you don't have to install Python, Node, LaTeX, R, or
-document tools yourself. You do not need to use PowerShell or type commands for the normal setup.
+- **Windows 10/11** or **Linux**, with about **20 GB of free disk space**. The first start
+  downloads about 10 GB.
+- **An account with at least one AI provider:** a Claude subscription, a ChatGPT plan that includes
+  Codex, or a Google account for Antigravity.
+- **A container program**, which keeps all the tools in one tidy box:
+  - Windows: [Docker Desktop](https://www.docker.com/products/docker-desktop/) (easiest), or
+    [WSL containers](https://learn.microsoft.com/en-us/windows/wsl/wsl-container) if you prefer not to
+    install Docker.
+  - Linux: [Docker Engine with the Compose plugin](https://docs.docker.com/engine/install/).
 
-**Research data and privacy:** Pokosomo stores projects on your laptop. When an AI assistant works
-on a project, your prompts and relevant project content it reads may be sent to that provider (for
-example, Anthropic or OpenAI). Do not use identifiable participant data or other restricted
-information unless your institution has approved that provider and use.
+## Get it working on Windows
 
-### Windows with Docker Desktop (easiest on windows)
+1. **Install [Docker Desktop](https://www.docker.com/get-started/)** and open it. Wait until it says the engine is running.
+2. **Download Pokosomo**: on the GitHub page, click **Code → Download ZIP**, then extract the ZIP
+   wherever you want to keep your projects (for example, `Documents\Pokosomo`).
+3. Open the `windows` folder and **double-click `start.bat`**. The first time, it:
+   - asks you to accept the license terms (it's free software with no warranty, see [License](#license))
+   - downloads the ready-made studio (this takes a while the first time)
+   - asks you to **choose a password** for the studio
+   - asks whether to turn on **two-factor sign-in**. Say no if you only use it on your own laptop.
+     Say yes if other people or the internet can reach it (see [Keeping it safe](#keeping-it-safe)).
+   - offers to **connect your AI account**. Choose Claude, Codex or Antigravity and follow the
+     steps on screen.
+4. Your browser opens at **http://localhost:8001**. Sign in with your password.
+5. Open **Settings** (the gear icon) and choose which assistant to use.
 
-1. Install and open [Docker Desktop](https://www.docker.com/products/docker-desktop/). Wait for it
-   to show that its engine is running.
-2. Download and extract the Pokosomo folder, then double-click [`start.bat`](start.bat). The first
-   run downloads the ready-made image, asks you to create a password and connect an authenticator
-   app, then opens the studio in your browser. If the image cannot be downloaded, it tries to build
-   it locally instead.
-3. To connect an AI assistant, double-click [`setup-agent.bat`](setup-agent.bat), choose Claude or
-   Codex, and follow the sign-in instructions. Then select it in **Settings → Assistant**. Both
-   assistants are included; you do not need to install them on Windows.
+**Stopping and starting:** double-click `windows\stop.bat` to stop and `windows\start.bat` to start
+again. With WSL containers, keep the start window open while you work and close it to stop. Your
+projects and sign-ins are kept either way.
 
-The studio runs in the background, so you can close the start window. Double-click [`stop.bat`](stop.bat)
-to stop it; double-click `start.bat` again to resume. Projects and sign-ins are saved across stops.
-If Docker Desktop is not running, open it and wait for the engine to start before trying again.
+**Connecting another AI account later:** double-click `windows\setup-agent.bat`.
 
-### Windows with WSL containers (optional, light on windows)
+## Get it working on Linux
 
-To run without Docker Desktop, install WSL and update it in PowerShell with `wsl --update`.
-[`wslc`](https://learn.microsoft.com/en-us/windows/wsl/wsl-container) requires WSL 2.9.3 or newer;
-check with `wsl --version` and `wslc version`. Then double-click [`start-wslc.bat`](start-wslc.bat)
-and open **http://localhost:8001**. The first run downloads the ready-made image and asks you to set
-a password and connect an authenticator app. Use [`setup-agent-wslc.bat`](setup-agent-wslc.bat) to
-sign in, and [`stop-wslc.bat`](stop-wslc.bat) to stop it.
-
-## Setup (Linux)
+Open a terminal and run:
 
 ```bash
-./scripts/install_deps.sh   # installs system and Python tools, plus Claude Code and Codex (needs sudo)
-./setup_auth.sh             # choose a password and scan the QR code with an authenticator app
-./run.sh                    # http://localhost:8001   (PORT=8080 ./run.sh to change)
+git clone https://github.com/tabahi/pokosomo.git
+cd pokosomo
+./linux/start.sh
 ```
 
-`run.sh` runs `setup_auth.sh` automatically the first time if it's started from a terminal.
-If an earlier Pokosomo run is still using the chosen port, `run.sh` safely stops that same app
-instance and reuses the port. It will not stop an unrelated program.
+It goes through the same steps as on Windows: license, download, password, optional two-factor
+sign-in, and connecting your AI account. Then open **http://localhost:8001**.
 
-Sign in to Claude or Codex once with `claude auth login` or `codex login`. Antigravity remains
-available when installed separately (`agy`). Settings in the UI choose the assistant and model for
-new chats.
+- Stop with `./linux/stop.sh` and start again with `./linux/start.sh`.
+- To connect another AI account later, run `./linux/setup-agent.sh`.
+- No Docker? `start.sh` offers to install everything directly on Debian or Ubuntu instead. This also
+  works on a Raspberry Pi running a 64-bit system (see [For technical users](#for-technical-users)).
 
-## Security
+## Connecting your AI account
 
-- **Password + TOTP 2FA.** `secrets.json` holds an scrypt hash of the password and the TOTP secret
-  (`{"login": {...}}`; other top-level keys are preserved). Codes can't be reused; 5 failed attempts per
-  IP lock sign-in for 15 minutes.
-- **Sessions** are server-side (`data/sessions.json`, only token hashes stored), cookie is `HttpOnly`,
-  `SameSite=Lax`, and `Secure` when served over HTTPS.
-  “Remember me” → 30-day cookie. Unticked → browser-session cookie, plus a 12-hour idle limit on the server.
-- Every HTTP route, static file and WebSocket requires a session (except the login page). Cross-site
-  POSTs and WebSocket handshakes are rejected by Origin check.
-- Files are served with `nosniff`; HTML and other active content is download-only, SVGs are sandboxed.
-- `./setup_auth.sh logout-all` (or Settings → “Sign out on all devices”) revokes every session.
-  Re-running `./setup_auth.sh` changes the password and also signs everyone out.
+The setup shortcut (`setup-agent.bat` or `setup-agent.sh`) asks which account to connect:
 
-**Use HTTPS when it's reachable beyond localhost** (e.g. Caddy, Tailscale, or a Cloudflare tunnel in
-front). Over plain HTTP the password and session cookie can be read by anyone on the network path.
-Behind a proxy on another host, set `FORWARDED_ALLOW_IPS` so the HTTPS flag is trusted.
+- **Claude:** open the link it shows, approve, and paste the code back.
+- **OpenAI Codex:** open the link it shows and sign in with your ChatGPT account.
+- **Antigravity (Google):** Antigravity opens in the window. Choose **Sign in** and open the link in
+  your browser. Then paste back the code, or the address of the page you end up on. When it says
+  you're signed in, type `/exit`.
 
-## How the agents are confined
+**Settings → Accounts** shows which accounts are connected. Each one stays signed in until you
+sign it out.
 
-Claude and Antigravity run with full permissions (`--dangerously-skip-permissions`). Codex uses its
-`workspace-write` sandbox, limited to the open project. The assistants are **instructed** to stay in
-the project: each starts in the project folder, `TMPDIR` points at `tmp/<project>/`, and
-[`server/agent_instructions.md`](server/agent_instructions.md) is appended to its system prompt
-(stay inside the project, use `$TMPDIR` for scratch, never delete her files, plain-language replies,
-save analyses as re-runnable scripts, never invent data or references…). Edit that file to change
-how the assistant behaves. For Windows Docker users, the container is the isolation boundary.
+## Using the studio
 
-## Layout
+1. On the home page, **create a project**. It becomes a folder inside `workspace\` in your Pokosomo
+   folder.
+2. **Add your files** by dragging them onto the file panel on the left.
+3. **Ask the assistant** in the panel on the right. For example:
+   - *"Summarise the PDFs in this project into a note with the key findings of each paper."*
+   - *"Compare group A and group B in results.xlsx with a suitable test and make a figure."*
+   - *"Turn draft.md into a PDF with a title page and my references."*
+   - *"Proofread chapter2.docx and list the changes you made."*
+   - *"Find recent papers on this topic and add them to a reading list."*
+4. Click any file the assistant mentions to open it. Notes open in an editor with buttons to
+   **make a PDF** or **export to Word**.
 
-```
-run.sh, setup_auth.sh          start the server / configure login
-Dockerfile, compose.yaml       container build recipe and prebuilt image configuration
-start*.bat, stop*.bat           Windows start / stop shortcuts (Docker Desktop or WSL containers)
-setup-agent*.bat                Windows Claude / Codex sign-in shortcuts
-scripts/install_deps.sh        system + Python dependencies (reproducible container setup)
-server/
-  app.py                       FastAPI routes + WebSockets
-  auth.py                      password/TOTP, sessions, auth middleware, setup CLI
-  chat_manager.py              runs Claude Code / Codex / agy, converts their event streams, chat history
-  agent_instructions.md        system-prompt addendum for the assistant
-  documents.py                 Markdown→PDF/Word, LaTeX→PDF, Word→Markdown, Office previews, table previews
-  templates/pdf-header.tex     LaTeX packages for every note PDF (siunitx, mhchem, float, …)
-  workspace_manager.py         projects and safe file operations (path-confined, trash instead of delete)
-  terminal_manager.py          PTY terminals for the advanced view
-static/
-  index.html, login.html       app shell and sign-in page
-  js/                          main (routing, home, settings), files, viewer, chat, terminal, util
-  css/app.css                  light/dark theme, responsive layout
-workspace/<project>/           her projects; chat history in <project>/.studio/chats/
-tmp/                           scratch for agents and document builds
-data/                          sessions and settings (git-ignored)
-```
+Advanced users can switch on **Settings → Advanced** to get a terminal with tabs for a shell,
+Claude Code, Antigravity and Codex.
 
-## Useful environment variables
+## Updating
+
+Run `start.bat` (or `./linux/start.sh`) again. It downloads the latest version each time it starts,
+and your projects, chats and sign-ins are kept. If the page looks outdated afterwards, reload it
+once.
+
+## Keeping it safe
+
+- **Your research data:** projects are stored on your computer. When the assistant works on a
+  project, your messages and the parts of files it reads are sent to the AI provider you chose
+  (Anthropic, OpenAI or Google). Don't use identifiable participant data or other restricted
+  information unless your institution has approved that provider.
+- **The assistant can change files.** It works inside the container with full permissions, and it is
+  told to stay inside the open project and never delete your files. Even so, keep backups of
+  anything important.
+- **On your own laptop**, a password is enough. The studio only listens on `localhost`, so other
+  computers can't reach it.
+- **On a server, or anywhere others can reach it**, you **must** turn on two-factor sign-in (run the
+  password setup again, see below) and put it behind HTTPS.
+
+## Troubleshooting
+
+| Problem | What to do |
+|---|---|
+| `start.bat` says Docker isn't running | Open Docker Desktop, wait until the engine is running, and try again. |
+| Port 8001 is already in use | Create a file named `.env` in the Pokosomo folder containing `PORT=8080`, start again, and open http://localhost:8080. |
+| Forgot the studio password, or want to turn on two-factor sign-in | Stop the studio, delete `data\secrets.json` (`data/secrets.json` on Linux), and start again. It asks for a new password. Your projects are untouched. |
+| The assistant says it isn't signed in | Run the setup shortcut again and connect that account. |
+| A Claude, Codex or Antigravity model has run out of usage | Pick another model or assistant in **Settings**, then press **Try again**. |
+| A double-clicked `.bat` window closes straight away | Open the file in Notepad and check the bottom-right corner, which should say **Windows (CRLF)**. If it says **Unix (LF)**, download the ZIP again rather than copying the files over by hand. |
+
+## For technical users
+
+<details>
+<summary>How it's put together, host installation, security details and configuration</summary>
+
+### How it runs
+
+Pokosomo is a FastAPI server with a plain-JavaScript front end. The Docker image
+[`where22/pokosomo-zero`](https://hub.docker.com/r/where22/pokosomo-zero) contains the server, Claude
+Code, Codex, Antigravity (`agy`), TeX Live, pandoc, LibreOffice, R, OCR tools and a scientific Python
+environment. [`compose.yaml`](compose.yaml) mounts `workspace/`, `tmp/` and `data/` from the
+Pokosomo folder, and keeps agent sign-ins in named volumes (`codex-auth`, `claude-auth`,
+`gemini-auth`). The port is published on `127.0.0.1` only.
+
+The scripts in `windows/` are launchers: they use WSL containers (`wslc`) when available, otherwise
+Docker, and run the matching script in [`windows/wslc/`](windows/wslc) or [`windows/docker/`](windows/docker).
+
+### Host installation (no Docker)
+
+`./linux/start.sh --host` runs [`scripts/install_deps.sh`](scripts/install_deps.sh) (Debian or
+Ubuntu, needs sudo and several GB) and then [`run.sh`](run.sh). Set the password with
+[`./setup_auth.sh`](setup_auth.sh). The prebuilt image is x86-64 only, so ARM machines such as a
+Raspberry Pi (64-bit OS) need the host installation.
+
+### How the agents are confined
+
+Claude and Antigravity run with `--dangerously-skip-permissions`. Inside the container Codex runs with
+`--dangerously-bypass-approvals-and-sandbox`, because its own sandbox (bubblewrap) cannot start inside
+Docker. The container is the isolation boundary, and the image sets `IS_SANDBOX=1` so Claude Code
+accepts this as root. In a host installation Codex uses its `workspace-write` sandbox, with
+network access. All three can search and read the web.
+
+Each agent starts in the project folder with `TMPDIR` set to `tmp/<project>/`.
+[`server/agent_instructions.md`](server/agent_instructions.md) is added to its instructions: stay
+inside the project, never delete files, reply in plain language, save analyses as re-runnable scripts,
+and never invent data or references. Edit that file to change how the assistant behaves.
+
+### Security details
+
+- **Password and optional TOTP.** `data/secrets.json` (`POKOSOMO_SECRETS`) holds an scrypt hash
+  of the password and, if two-factor sign-in is on, the TOTP secret. A code can't be reused, and 5
+  failed attempts from one IP lock sign-in for 15 minutes.
+- **Sessions** are stored on the server in `data/sessions.json` as token hashes. The cookie is
+  `HttpOnly`, `SameSite=Lax`, and `Secure` over HTTPS. "Remember me" keeps you signed in for 30 days;
+  without it, the cookie lasts until the browser closes and the session ends after 12 hours idle.
+- Every route, static file and WebSocket needs a session, except the login page. Cross-site POSTs
+  and WebSocket handshakes are rejected by an Origin check. HTML and other active content is
+  download-only, and SVGs are sandboxed.
+- `./setup_auth.sh logout-all` or **Settings → Sign out on all devices** revokes every session.
+  Re-running the password setup also signs everyone out.
+- Put HTTPS in front (Caddy, Tailscale, a Cloudflare tunnel, …) whenever the studio is reachable
+  beyond localhost. Behind a proxy on another host, set `FORWARDED_ALLOW_IPS`.
+
+### Environment variables
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `PORT`, `HOST` | `8001`, `0.0.0.0` | where `run.sh` listens; Docker publishes to `localhost` only |
+| `PORT`, `HOST` | `8001`, `0.0.0.0` | where the server listens; Docker publishes to `localhost` only |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | proxies trusted for `X-Forwarded-*` |
 | `POKOSOMO_VENV` | `.venv` | Python environment (`/opt/venv` in Docker) |
-| `POKOSOMO_SECRETS`, `POKOSOMO_DATA` | `secrets.json`, `data/` | alternative locations (handy for testing) |
-| `POKOSOMO_CLAUDE_BIN`, `POKOSOMO_AGY_BIN` | `claude`, `agy` | agent executables |
-| `POKOSOMO_CODEX_BIN` | `codex` | Codex CLI executable |
+| `POKOSOMO_SECRETS`, `POKOSOMO_DATA` | `secrets.json`, `data/` | alternative locations |
+| `POKOSOMO_CLAUDE_BIN`, `POKOSOMO_AGY_BIN`, `POKOSOMO_CODEX_BIN` | `claude`, `agy`, `codex` | agent executables |
 
+### Building the image
+
+```bash
+docker build -t where22/pokosomo-zero:latest .
+```
+
+The heavy tools are installed in their own layer, so changes to the app code rebuild in seconds.
+
+</details>
+
+## License
+
+Pokosomo Studio is free software under the [MIT License](LICENSE). It is provided "as is", without
+warranty of any kind. The authors accept no responsibility or liability for any damage, data loss,
+costs or other consequences of using it, including anything the AI assistants do. The start
+scripts ask you to accept these terms once before installing.

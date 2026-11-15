@@ -65,16 +65,18 @@
   <main class="card">
     <div class="logo"><img src="/favicon.svg" alt=""><span>Pokosomo <b>Studio</b></span></div>
     <div id="notConfigured" class="notice" hidden>
-      Sign-in isn't set up yet. On the server, run <code>./setup_auth.sh</code> to choose a password and connect an authenticator app.
+      Sign-in isn't set up yet. On the server, run <code>./setup_auth.sh</code> to choose a password.
     </div>
     <form id="form" autocomplete="on">
       <h1>Welcome back</h1>
       <p class="sub">Sign in to your research studio.</p>
       <label for="password">Password</label>
       <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
-      <label for="code">6-digit code</label>
-      <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" placeholder="••••••" required>
-      <div class="hint">Open your authenticator app and type the code shown for “Pokosomo Studio”.</div>
+      <div id="codeBox" hidden>
+        <label for="code">6-digit code</label>
+        <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" placeholder="••••••">
+        <div class="hint">Open your authenticator app and type the code shown for “Pokosomo Studio”.</div>
+      </div>
       <label class="remember">
         <input type="checkbox" id="remember">
         <span>Remember me on this device<small>Stay signed in for 30 days. Leave unticked on shared computers — you'll be signed out when the browser closes.</small></span>
@@ -91,6 +93,7 @@
     fetch('/api/auth/state').then(r => r.json()).then(s => {
       if (s.signed_in) location.replace('/');
       if (!s.configured) { document.getElementById('notConfigured').hidden = false; form.hidden = true; }
+      if (s.totp) { document.getElementById('codeBox').hidden = false; code.required = true; }
     }).catch(() => {});
     code.addEventListener('input', () => { code.value = code.value.replace(/[^0-9]/g, '').slice(0, 6); });
     form.addEventListener('submit', async e => {

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Set (or change) the studio password and connect an authenticator app.
+# Set (or change) the studio password and, optionally, two-factor sign-in (authenticator app).
 #   ./setup_auth.sh             interactive setup
 #   ./setup_auth.sh logout-all  sign out every browser
 set -euo pipefail

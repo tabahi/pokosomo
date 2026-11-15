@@ -43,7 +43,7 @@ if [[ "${SKIP_APT:-0}" != "1" ]]; then
     tesseract-ocr tesseract-ocr-eng ocrmypdf \
     libreoffice-writer-nogui libreoffice-calc-nogui libreoffice-impress-nogui \
     r-base-core r-recommended \
-    zip unzip p7zip-full curl wget jq sqlite3 build-essential lsof nodejs npm sudo
+    zip unzip p7zip-full curl wget jq sqlite3 build-essential lsof procps nodejs npm sudo
   "${SUDO[@]}" apt-get clean
 
   log "Making TeX Live's OpenType fonts (Libertinus etc.) visible to XeLaTeX via fontconfig"
@@ -60,6 +60,10 @@ EOF
   "${SUDO[@]}" npm install --global @anthropic-ai/claude-code
   if ! command -v codex >/dev/null 2>&1 && [[ ! -x "$HOME/.local/bin/codex" ]]; then
     curl -fsSL https://chatgpt.com/codex/install.sh | sh
+  fi
+  log "Installing Antigravity (agy)"
+  if ! command -v agy >/dev/null 2>&1 && [[ ! -x "$HOME/.local/bin/agy" ]]; then
+    curl -fsSL https://antigravity.google/cli/install.sh | bash || echo "Antigravity install failed (non-fatal)"
   fi
 fi
 
@@ -81,7 +85,7 @@ PIP="$VENV/bin/pip"
 "$PIP" install -q --upgrade scikit-bio || echo "scikit-bio failed (non-fatal)"
 
 log "Checking key tools"
-for t in pandoc xelatex lualatex latexmk biber soffice pdftotext tesseract ocrmypdf R claude codex; do
+for t in pandoc xelatex lualatex latexmk biber soffice pdftotext tesseract ocrmypdf R claude codex agy; do
   if command -v "$t" >/dev/null 2>&1; then echo "  ok   $t"; else echo "  MISSING $t"; fi
 done
 "$VENV/bin/python" -c "import fastapi, uvicorn, statsmodels, seaborn, pingouin, docx, pypdf, fitz, pyotp, qrcode; print('  ok   python stack')"

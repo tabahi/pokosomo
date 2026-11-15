@@ -1,6 +1,6 @@
 @echo off
 setlocal
-cd /d "%~dp0"
+cd /d "%~dp0..\.."
 
 where docker >nul 2>&1
 if errorlevel 1 (
@@ -25,19 +25,19 @@ if errorlevel 1 (
   echo The prebuilt image could not be pulled. Trying a local build instead.
   docker compose build
   if errorlevel 1 (
-    echo Setup did not finish. Check the message above, then double-click start.bat to try again.
+    echo Setup did not finish. Check the message above, then double-click windows\start.bat to try again.
     pause
     exit /b 1
   )
 )
 
-docker compose run --rm studio python -m server.auth status | findstr /C:"Login configured." >nul
+docker compose run --rm -T studio python -m server.auth status | findstr /C:"Login configured." >nul
 if errorlevel 1 (
   echo.
-  echo First, create your studio password and connect an authenticator app.
-  docker compose run --rm -it studio python -m server.auth setup
+  echo First, create your studio password. You will be asked whether to turn on two-factor sign-in.
+  docker compose run --rm studio python -m server.auth setup
   if errorlevel 1 (
-    echo Login setup did not finish. Double-click start.bat to try again.
+    echo Login setup did not finish. Double-click windows\start.bat to try again.
     pause
     exit /b 1
   )
@@ -56,7 +56,9 @@ set "STUDIO_PORT=8001"
 for /f "tokens=2 delims=:" %%P in ('docker compose port studio 8001 2^>nul') do set "STUDIO_PORT=%%P"
 echo.
 echo Opening Pokosomo Studio at http://localhost:%STUDIO_PORT%
-echo You can close this window. To stop Pokosomo, double-click stop.bat.
-timeout /t 3 /nobreak >nul
+echo You can close this window. To stop Pokosomo, double-click windows\stop.bat.
+set "CONNECT=y"
+set /p CONNECT="Connect your Claude, Codex or Antigravity account now? [Y/n]: "
+if /i not "%CONNECT%"=="n" call "%~dp0setup-agent.bat"
 start "" "http://localhost:%STUDIO_PORT%"
 endlocal

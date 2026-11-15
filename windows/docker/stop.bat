@@ -1,6 +1,6 @@
 @echo off
 setlocal
-cd /d "%~dp0"
+cd /d "%~dp0..\.."
 docker compose down
 if errorlevel 1 (
   echo Could not stop Pokosomo. Make sure Docker Desktop is running.

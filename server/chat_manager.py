@@ -22,6 +22,8 @@ CLAUDE_BIN = os.environ.get("POKOSOMO_CLAUDE_BIN", "claude")
 AGY_BIN = os.environ.get("POKOSOMO_AGY_BIN", "agy")
 CODEX_BIN = os.environ.get("POKOSOMO_CODEX_BIN", "codex")
 TRIM = 2500
+# Set in the Docker image (and detectable via /.dockerenv): agents run without their own sandboxes there.
+IN_CONTAINER = os.environ.get("IS_SANDBOX") == "1" or Path("/.dockerenv").exists()
 
 DEFAULT_SETTINGS = {
     "engine": "claude",            # "claude" | "agy" | "codex"
@@ -610,9 +612,18 @@ class ChatManager:
             cmd = [CODEX_BIN, "exec"]
             if chat.get("agent_session"):
                 cmd += ["resume", chat["agent_session"]]
-            cmd += ["--json", "--sandbox", "workspace-write", "--ask-for-approval", "never",
-                    "--cd", str(project_dir), "--add-dir", str(TMP / project_dir.name),
-                    "--skip-git-repo-check"]
+            # `codex exec resume` accepts neither --sandbox nor --cd/--add-dir, so settings go through -c
+            # (valid for both forms) and the project folder is the process's working directory.
+            cmd += ["--json", "--skip-git-repo-check"]
+            if IN_CONTAINER:
+                # Codex's own sandbox (bubblewrap) cannot create namespaces inside Docker, so every
+                # command would fail. The container is the isolation boundary, as for Claude and agy.
+                cmd += ["--dangerously-bypass-approvals-and-sandbox"]
+            else:
+                tmp_dir = json.dumps(str(TMP / project_dir.name))
+                cmd += ["-c", 'approval_policy="never"', "-c", 'sandbox_mode="workspace-write"',
+                        "-c", f"sandbox_workspace_write.writable_roots=[{tmp_dir}]",
+                        "-c", "sandbox_workspace_write.network_access=true"]
             if chat.get("model"):
                 cmd += ["--model", chat["model"]]
             return cmd + [prompt]
